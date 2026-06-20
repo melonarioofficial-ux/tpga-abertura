@@ -1,0 +1,45 @@
+name: Daily Signal — NDX100 | XAUUSD | DAX 40
+
+on:
+  schedule:
+    # 13:00 UTC = 10:00 BRT  (antes da abertura do mercado americano)
+    - cron: '0 13 * * 1-5'
+  workflow_dispatch:   # disparo manual pelo GitHub UI
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements_ci.txt
+
+      - name: Instalar dependências
+        run: pip install -r requirements_ci.txt
+
+      - name: Gerar sinais (NDX100 | XAUUSD | DAX 40)
+        run: python generate_signal_ci.py
+
+      - name: Commit sinais
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add \
+            public/signal.json \
+            public/signal_xauusd.json \
+            public/signal_dax.json
+          git diff --staged --quiet \
+            && echo "Sem mudanças nos sinais." \
+            || (
+              git commit -m "signals: $(date -u +'%Y-%m-%d %H:%M UTC') [NDX|XAU|DAX]"
+              git push
+            )

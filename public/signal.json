@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-06-20T19:42:32.840517-03:00",
+  "timestamp": "2026-06-20T19:42:32.840517-03:00",
+  "name": "NDX100",
+  "symbol": "NDX100",
+  "label": "NDX100 — Nasdaq",
+  "unit": "pts",
+  "source_mode": "yfinance_ci_ndx",
+  "macro_features_filled": 6,
+  "mt5_bars_used": 0,
+  "walk_forward_auc": 0.5832,
+  "walk_forward_mcc": 0.0878,
+  "walk_forward_sessions": 636,
+  "cost_points": 2.0,
+  "decisao": "AGUARDAR",
+  "p_up": 0.5038,
+  "p_down": 0.4289,
+  "p_flat": 0.0673,
+  "edge": 0.0749,
+  "confidence": 0.5038,
+  "gap_proxy": 1.36,
+  "expected_gap_points_proxy": 1.36,
+  "median_abs_gap_points": 18.12,
+  "macro_features": {
+    "futures_overnight_ret": 0.012597,
+    "qqq_premarket_ret": 0.024756,
+    "spy_premarket_ret": 0.010343,
+    "weighted_bigtech_premarket_ret": 0.024756,
+    "vix_ret": -0.117241,
+    "dxy_ret": -1e-05,
+    "us10y_ret": null
+  },
+  "walk_forward": {
+    "sessions": 636,
+    "total_sessions": 636,
+    "folds": 11,
+    "accuracy": 0.4733,
+    "mcc": 0.0878,
+    "mcc_multiclass": 0.0878,
+    "auc_up": 0.5832,
+    "brier_up": 0.242,
+    "majority_accuracy": 0.4355,
+    "futures_accuracy": 0.4151
+  },
+  "paper": {
+    "cases": 164,
+    "total": 636,
+    "rate": 0.2579,
+    "hit_rate": 0.5427,
+    "ev_per_trade": 11.61,
+    "pnl_total": 1904.5,
+    "max_drawdown": -1339.25,
+    "profit_factor": 1.54
+  },
+  "bootstrap": {
+    "ci_lo": -6.9478,
+    "ci_hi": 27.8907,
+    "mean": 12.101,
+    "sig": false,
+    "auc_up": {
+      "mean": 0.5859,
+      "ci_lo": 0.5413,
+      "ci_hi": 0.6312,
+      "sig": true
+    },
+    "mcc_multiclass": {
+      "mean": 0.0932,
+      "ci_lo": 0.0384,
+      "ci_hi": 0.1526,
+      "sig": true
+    },
+    "ev_points_per_study_case": {
+      "mean": 12.101,
+      "ci_lo": -6.9478,
+      "ci_hi": 27.8907,
+      "sig": false
+    }
+  },
+  "correlatos": {
+    "futures_overnight_ret": "NQ=F",
+    "qqq_premarket_ret": "QQQ",
+    "spy_premarket_ret": "SPY",
+    "weighted_bigtech_premarket_ret": "QQQ",
+    "vix_ret": "^VIX",
+    "dxy_ret": "DX-Y.NYB",
+    "us10y_ret": "^TNX"
+  },
+  "note": "Sinal educacional/paper. Não envia ordens. Não é recomendação de investimento."
+}

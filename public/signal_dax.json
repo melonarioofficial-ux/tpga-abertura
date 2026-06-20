@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-06-20T19:47:02.831363-03:00",
+  "timestamp": "2026-06-20T19:47:02.831363-03:00",
+  "name": "DAX40",
+  "symbol": "DAX40",
+  "label": "DAX 40 — Alemanha",
+  "unit": "pts",
+  "source_mode": "yfinance_ci_dax",
+  "macro_features_filled": 6,
+  "mt5_bars_used": 0,
+  "walk_forward_auc": 0.5435,
+  "walk_forward_mcc": 0.009,
+  "walk_forward_sessions": 642,
+  "cost_points": 2.0,
+  "decisao": "COMPRA ESTUDO",
+  "p_up": 0.5942,
+  "p_down": 0.3072,
+  "p_flat": 0.0986,
+  "edge": 0.2869,
+  "confidence": 0.5942,
+  "gap_proxy": 15.13,
+  "expected_gap_points_proxy": 15.13,
+  "median_abs_gap_points": 52.74,
+  "macro_features": {
+    "futures_overnight_ret": 0.010788,
+    "qqq_premarket_ret": -0.00332,
+    "spy_premarket_ret": 0.004918,
+    "weighted_bigtech_premarket_ret": -1e-05,
+    "vix_ret": -0.117241,
+    "dxy_ret": -1e-05,
+    "us10y_ret": null
+  },
+  "walk_forward": {
+    "sessions": 642,
+    "total_sessions": 642,
+    "folds": 11,
+    "accuracy": 0.3505,
+    "mcc": 0.009,
+    "mcc_multiclass": 0.009,
+    "auc_up": 0.5435,
+    "brier_up": 0.2469,
+    "majority_accuracy": 0.3131,
+    "futures_accuracy": 0.4143
+  },
+  "paper": {
+    "cases": 207,
+    "total": 642,
+    "rate": 0.3224,
+    "hit_rate": 0.5652,
+    "ev_per_trade": 45.64,
+    "pnl_total": 9448.23,
+    "max_drawdown": -608.81,
+    "profit_factor": 3.83
+  },
+  "bootstrap": {
+    "ci_lo": 24.0901,
+    "ci_hi": 74.0874,
+    "mean": 44.9776,
+    "sig": true,
+    "auc_up": {
+      "mean": 0.5421,
+      "ci_lo": 0.4913,
+      "ci_hi": 0.592,
+      "sig": true
+    },
+    "mcc_multiclass": {
+      "mean": 0.0091,
+      "ci_lo": -0.0709,
+      "ci_hi": 0.084,
+      "sig": false
+    },
+    "ev_points_per_study_case": {
+      "mean": 44.9776,
+      "ci_lo": 24.0901,
+      "ci_hi": 74.0874,
+      "sig": true
+    }
+  },
+  "correlatos": {
+    "futures_overnight_ret": "^GSPC",
+    "qqq_premarket_ret": "EURUSD=X",
+    "spy_premarket_ret": "EZU",
+    "weighted_bigtech_premarket_ret": "DX-Y.NYB",
+    "vix_ret": "^VIX",
+    "dxy_ret": "DX-Y.NYB",
+    "us10y_ret": "^TNX"
+  },
+  "note": "Sinal educacional/paper. Não envia ordens. Não é recomendação de investimento."
+}

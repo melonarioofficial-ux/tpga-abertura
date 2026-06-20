@@ -1,0 +1,23 @@
+{
+  "generated_at": null,
+  "symbol": "USOIL",
+  "label": "Crude Oil WTI — Petróleo",
+  "unit": "USD",
+  "source_mode": "placeholder",
+  "decisao": "AGUARDAR",
+  "p_up": 0.333, "p_down": 0.333, "p_flat": 0.333,
+  "edge": 0.0, "confidence": 0.333,
+  "expected_gap_points_proxy": 0.0, "median_abs_gap_points": 0.0,
+  "macro_features_filled": 0,
+  "walk_forward": {},
+  "paper": {},
+  "bootstrap": {},
+  "correlatos": {
+    "futures_overnight_ret":          "CL=F (WTI futures overnight)",
+    "qqq_premarket_ret":              "XLE (Energy ETF — setor petróleo)",
+    "spy_premarket_ret":              "^GSPC (S&P500 — proxy demanda global)",
+    "weighted_bigtech_premarket_ret": "DX-Y.NYB (Dollar Index — INVERSO ao petróleo)",
+    "vix_ret":   "^VIX", "dxy_ret": "DX-Y.NYB", "us10y_ret": "^TNX"
+  },
+  "note": "Aguardando primeira execução do GitHub Actions."
+}

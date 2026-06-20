@@ -1,0 +1,23 @@
+label:
+  flat_threshold_points: 5.0
+  min_abs_gap_points: 0.0
+
+backtest:
+  edge_threshold: 0.12
+  confidence_threshold: 0.48
+  fakeout_max: 0.70
+  cost_points: 2.0
+  max_study_cases_per_day: 1
+
+validation:
+  min_train_size: 120
+  test_size: 30
+  step_size: 30
+  bootstrap_samples: 500
+  random_state: 42
+
+features:
+  enable_noii: true
+  enable_bigtech: true
+  enable_macro: true
+  enable_fakeout: true

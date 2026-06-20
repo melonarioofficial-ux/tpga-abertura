@@ -1,0 +1,23 @@
+{
+  "generated_at": null,
+  "symbol": "NKY225",
+  "label": "Nikkei 225 — Japão",
+  "unit": "pts",
+  "source_mode": "placeholder",
+  "decisao": "AGUARDAR",
+  "p_up": 0.333, "p_down": 0.333, "p_flat": 0.333,
+  "edge": 0.0, "confidence": 0.333,
+  "expected_gap_points_proxy": 0.0, "median_abs_gap_points": 0.0,
+  "macro_features_filled": 0,
+  "walk_forward": {},
+  "paper": {},
+  "bootstrap": {},
+  "correlatos": {
+    "futures_overnight_ret":          "^GSPC (S&P500 fecha após Nikkei — preditor #1)",
+    "qqq_premarket_ret":              "USDJPY=X (USD/JPY — PREDITOR DOMINANTE)",
+    "spy_premarket_ret":              "EWJ (iShares MSCI Japan ETF)",
+    "weighted_bigtech_premarket_ret": "DX-Y.NYB (Dollar Index)",
+    "vix_ret":   "^VIX", "dxy_ret": "DX-Y.NYB", "us10y_ret": "^TNX"
+  },
+  "note": "Aguardando primeira execução do GitHub Actions."
+}

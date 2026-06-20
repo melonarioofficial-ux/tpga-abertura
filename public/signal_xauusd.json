@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-06-20T19:44:51.116799-03:00",
+  "timestamp": "2026-06-20T19:44:51.116799-03:00",
+  "name": "XAUUSD",
+  "symbol": "XAUUSD",
+  "label": "XAUUSD — Ouro",
+  "unit": "USD",
+  "source_mode": "yfinance_ci_xau",
+  "macro_features_filled": 6,
+  "mt5_bars_used": 0,
+  "walk_forward_auc": 0.5649,
+  "walk_forward_mcc": 0.1305,
+  "walk_forward_sessions": 635,
+  "cost_points": 0.5,
+  "decisao": "AGUARDAR",
+  "p_up": 0.4752,
+  "p_down": 0.2643,
+  "p_flat": 0.2605,
+  "edge": 0.2109,
+  "confidence": 0.4752,
+  "gap_proxy": 1.65,
+  "expected_gap_points_proxy": 1.65,
+  "median_abs_gap_points": 7.8,
+  "macro_features": {
+    "futures_overnight_ret": -0.012195,
+    "qqq_premarket_ret": -0.020509,
+    "spy_premarket_ret": -0.000784,
+    "weighted_bigtech_premarket_ret": 0.010343,
+    "vix_ret": -0.117241,
+    "dxy_ret": -1e-05,
+    "us10y_ret": null
+  },
+  "walk_forward": {
+    "sessions": 635,
+    "total_sessions": 635,
+    "folds": 11,
+    "accuracy": 0.4598,
+    "mcc": 0.1305,
+    "mcc_multiclass": 0.1305,
+    "auc_up": 0.5649,
+    "brier_up": 0.256,
+    "majority_accuracy": 0.4598,
+    "futures_accuracy": 0.3701
+  },
+  "paper": {
+    "cases": 139,
+    "total": 635,
+    "rate": 0.2189,
+    "hit_rate": 0.5755,
+    "ev_per_trade": 5.55,
+    "pnl_total": 771.8,
+    "max_drawdown": -207.2,
+    "profit_factor": 1.74
+  },
+  "bootstrap": {
+    "ci_lo": 1.3991,
+    "ci_hi": 11.6969,
+    "mean": 5.7451,
+    "sig": true,
+    "auc_up": {
+      "mean": 0.5641,
+      "ci_lo": 0.5203,
+      "ci_hi": 0.616,
+      "sig": true
+    },
+    "mcc_multiclass": {
+      "mean": 0.1297,
+      "ci_lo": 0.0614,
+      "ci_hi": 0.1928,
+      "sig": true
+    },
+    "ev_points_per_study_case": {
+      "mean": 5.7451,
+      "ci_lo": 1.3991,
+      "ci_hi": 11.6969,
+      "sig": true
+    }
+  },
+  "correlatos": {
+    "futures_overnight_ret": "GC=F",
+    "qqq_premarket_ret": "SI=F",
+    "spy_premarket_ret": "CL=F",
+    "weighted_bigtech_premarket_ret": "SPY",
+    "vix_ret": "^VIX",
+    "dxy_ret": "DX-Y.NYB",
+    "us10y_ret": "^TNX"
+  },
+  "note": "Sinal educacional/paper. Não envia ordens. Não é recomendação de investimento."
+}

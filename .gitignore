@@ -1,0 +1,49 @@
+# ── Ambiente virtual ──────────────────────────────────────────
+.venv/
+venv/
+env/
+.env
+
+# ── Python cache ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# ── Dados locais (grandes; gerados localmente) ────────────────
+dados_reais_*.csv
+resultados_*.csv
+resultados_treino.csv
+resultados_teste.csv
+
+# ── Sinais locais (reports/) — gerados por SINAL_*.py ─────────
+# Os da pasta public/ SÃO commitados (servidos pela Vercel)
+reports/
+
+# ── Notebooks (saídas jupyter) ────────────────────────────────
+notebooks/.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ── Arquivos grandes / temporários ───────────────────────────
+*.zip
+*.docx
+*.xlsx
+*.log
+*.tmp
+
+# ── IDEs ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Config com segredos (se houver) ──────────────────────────
+config/secrets.json
+config/*.key

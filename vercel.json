@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "public": true,
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "framework": null,
+  "headers": [
+    {
+      "source": "/(signal|signal_xauusd|signal_dax)\\.json",
+      "headers": [
+        { "key": "Cache-Control",                "value": "public, max-age=1800, stale-while-revalidate=3600" },
+        { "key": "Access-Control-Allow-Origin",  "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" }
+      ]
+    }
+  ]
+}

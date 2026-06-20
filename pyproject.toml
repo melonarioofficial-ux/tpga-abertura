@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tpga-ndx100"
+version = "14.0.0"
+description = "TPGA NDX100 - robô online/in-memory para estudo probabilístico de gap com dados reais do MetaTrader 5, sem CSV operacional"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "scikit-learn>=1.3",
+  "pyyaml>=6.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+mt5 = ["MetaTrader5>=5.0"]
+market = ["yfinance>=0.2"]

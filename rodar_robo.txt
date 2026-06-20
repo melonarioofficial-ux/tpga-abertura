@@ -1,0 +1,7 @@
+# Gera os 3 sinais locais
+python SINAL_HOJE_HIBRIDO.py
+python SINAL_XAUUSD_HIBRIDO.py
+python SINAL_DAX_HIBRIDO.py
+
+# Abre o dashboard
+python DASHBOARD.py

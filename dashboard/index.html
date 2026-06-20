@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TPGA — Sinal de Abertura</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d0f14;
+      --surface: #161923;
+      --border:  #252a38;
+      --muted:   #4a5068;
+      --text:    #e2e6f0;
+      --dim:     #8892a8;
+      --up:      #22c55e;
+      --dn:      #ef4444;
+      --flat:    #f59e0b;
+      --blue:    #3b82f6;
+      --radius:  10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .logo { font-size: 18px; font-weight: 700; letter-spacing: .5px; }
+    .logo span { color: var(--blue); }
+    .header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .instrument-badge {
+      background: #1e2433;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: .3px;
+    }
+    #header-ts     { font-size: 12px; color: var(--dim); }
+    #header-source { font-size: 11px; color: var(--muted); }
+
+    /* ── Tabs ────────────────────────────────────────────────────── */
+    .tabs-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      gap: 4px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 18px;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover  { color: var(--text); }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+    /* ── Layout ──────────────────────────────────────────────────── */
+    main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+    .grid    { display: grid; gap: 14px; }
+    .grid-12 { grid-template-columns: repeat(12, 1fr); }
+    .col-3  { grid-column: span 3; }
+    .col-4  { grid-column: span 4; }
+    .col-5  { grid-column: span 5; }
+    .col-12 { grid-column: span 12; }
+
+    @media (max-width: 900px) {
+      .col-3, .col-4, .col-5, .col-12 { grid-column: span 12; }
+    }
+
+    /* ── Cards ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--dim);
+      margin-bottom: 14px;
+    }
+
+    /* ── Signal card ─────────────────────────────────────────────── */
+    .signal-badge {
+      display: inline-block;
+      font-size: 22px;
+      font-weight: 800;
+      padding: 6px 20px;
+      border-radius: 8px;
+      letter-spacing: .5px;
+      margin-bottom: 14px;
+    }
+    .badge-up   { background: rgba(34,197,94,.15);  color: var(--up);   border: 1px solid rgba(34,197,94,.35); }
+    .badge-down { background: rgba(239,68,68,.15);  color: var(--dn);   border: 1px solid rgba(239,68,68,.35); }
+    .badge-flat { background: rgba(245,158,11,.12); color: var(--flat); border: 1px solid rgba(245,158,11,.3); }
+
+    .signal-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+    .sm-item     { display: flex; flex-direction: column; gap: 2px; }
+    .sm-label    { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+    .sm-value    { font-size: 15px; font-weight: 700; }
+    .val-up   { color: var(--up); }
+    .val-down { color: var(--dn); }
+    .val-flat { color: var(--flat); }
+    .val-blue { color: var(--blue); }
+
+    /* ── Macro features ──────────────────────────────────────────── */
+    .macro-list { display: flex; flex-direction: column; gap: 8px; }
+    .macro-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .macro-name { color: var(--dim); width: 190px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .macro-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .macro-bar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+    .macro-val  { width: 64px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    /* ── Probability bars ────────────────────────────────────────── */
+    .prob-row      { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .prob-label    { width: 36px; font-size: 12px; font-weight: 700; }
+    .prob-bar-wrap { flex: 1; height: 18px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .prob-bar-fill {
+      height: 100%; border-radius: 4px; transition: width .5s ease;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 6px; font-size: 11px; font-weight: 700; color: #fff;
+    }
+    .bar-up   { background: linear-gradient(90deg, #16a34a, var(--up)); }
+    .bar-dn   { background: linear-gradient(90deg, #b91c1c, var(--dn)); }
+    .bar-flat { background: linear-gradient(90deg, #b45309, var(--flat)); }
+
+    /* ── Walk-forward KPIs ───────────────────────────────────────── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi-item {
+      background: #0d0f14;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 12px;
+    }
+    .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+    .kpi-value { font-size: 18px; font-weight: 700; }
+
+    /* ── Bootstrap ───────────────────────────────────────────────── */
+    .boot-range {
+      font-size: 22px; font-weight: 800; text-align: center;
+      padding: 10px 0; letter-spacing: .5px;
+    }
+    .boot-row  { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--dim); margin-top: 8px; }
+    .sig-pill  {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+    }
+    .sig-yes { background: rgba(34,197,94,.15);    color: var(--up);  border: 1px solid rgba(34,197,94,.35); }
+    .sig-no  { background: rgba(100,116,139,.1);   color: var(--dim); border: 1px solid var(--border); }
+
+    /* ── Paper simulation ────────────────────────────────────────── */
+    .paper-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .paper-kpi  {
+      background: #0d0f14;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .paper-kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
+    .paper-kpi-value { font-size: 17px; font-weight: 700; }
+
+    /* ── Doughnut chart ──────────────────────────────────────────── */
+    .chart-wrap { position: relative; height: 180px; }
+
+    /* ── Disclaimer ──────────────────────────────────────────────── */
+    .disclaimer {
+      grid-column: span 12;
+      background: rgba(245,158,11,.06);
+      border: 1px solid rgba(245,158,11,.2);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 12px;
+      color: var(--flat);
+      text-align: center;
+    }
+
+    /* ── States ──────────────────────────────────────────────────── */
+    #loader {
+      display: flex; align-items: center; justify-content: center;
+      height: 200px; color: var(--dim); font-size: 16px; grid-column: span 12;
+    }
+    .error-box {
+      grid-column: span 12;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      color: var(--dn);
+      line-height: 1.7;
+    }
+    .error-box code {
+      background: #0d0f14;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TPGA <span>·</span> Gap de Abertura</div>
+  <div class="header-right">
+    <div class="instrument-badge" id="header-instrument">–</div>
+    <div>
+      <div id="header-ts">–</div>
+      <div id="header-source">–</div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" data-tab="ndx" onclick="switchTab('ndx')">NDX100</button>
+  <button class="tab-btn"        data-tab="xau" onclick="switchTab('xau')">XAUUSD — Ouro</button>
+  <button class="tab-btn"        data-tab="dax" onclick="switchTab('dax')">DAX 40</button>
+</div>
+
+<main>
+  <div class="grid grid-12" id="dash"></div>
+</main>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const TABS = {
+  ndx: { label: 'NDX100',        api: '/api/signal_ndx', script: 'SINAL_HOJE_HIBRIDO.py'    },
+  xau: { label: 'XAUUSD — Ouro', api: '/api/signal_xau', script: 'SINAL_XAUUSD_HIBRIDO.py' },
+  dax: { label: 'DAX 40',        api: '/api/signal_dax', script: 'SINAL_DAX_HIBRIDO.py'    },
+}
+
+const MACRO_NAMES = {
+  futures_overnight_ret:          'Futures overnight',
+  qqq_premarket_ret:              'Ativo correlato A',
+  spy_premarket_ret:              'Ativo correlato B',
+  weighted_bigtech_premarket_ret: 'Ativo correlato C',
+  vix_ret:                        'VIX (volatilidade)',
+  dxy_ret:                        'DXY (dólar)',
+  us10y_ret:                      'US 10y (juro)',
+}
+
+const MACRO_KEYS = Object.keys(MACRO_NAMES)
+
+let currentTab    = 'ndx'
+let doughnutChart = null
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+const fmt   = (v, d=2) => v == null || isNaN(+v) ? '–' : (+v).toFixed(d)
+const pct   = v => v == null ? '–' : (v * 100).toFixed(1) + '%'
+const sign  = v => v == null ? '–' : (v >= 0 ? '+' : '') + (+v).toFixed(2)
+const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi)
+
+function accentOf(label) {
+  if (!label) return 'var(--dim)'
+  const l = label.toUpperCase()
+  if (l.includes('COMPRA') || l.includes('ALTA'))  return 'var(--up)'
+  if (l.includes('VENDA')  || l.includes('BAIXA')) return 'var(--dn)'
+  return 'var(--flat)'
+}
+
+function badgeClass(label) {
+  if (!label) return 'badge-flat'
+  const l = label.toUpperCase()
+  if (l.includes('COMPRA') || l.includes('ALTA'))  return 'badge-up'
+  if (l.includes('VENDA')  || l.includes('BAIXA')) return 'badge-down'
+  return 'badge-flat'
+}
+
+// ── Tab switch ────────────────────────────────────────────────────────────────
+function switchTab(key) {
+  currentTab = key
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === key)
+  )
+  loadSignal(key)
+}
+
+// ── Load + render ─────────────────────────────────────────────────────────────
+async function loadSignal(key) {
+  const d = document.getElementById('dash')
+
+  // Destroy chart before clearing DOM to avoid canvas leak
+  if (doughnutChart) { doughnutChart.destroy(); doughnutChart = null }
+  d.innerHTML = '<div id="loader">Carregando sinal…</div>'
+
+  // Reset header
+  document.getElementById('header-instrument').textContent = TABS[key].label
+  document.getElementById('header-ts').textContent         = '–'
+  document.getElementById('header-source').textContent     = '–'
+
+  let s
+  try {
+    const r = await fetch(TABS[key].api)
+    s = await r.json()
+  } catch (e) {
+    d.innerHTML = `<div class="error-box">
+      ⚠ Erro de conexão — verifique se o servidor está rodando.<br>
+      Detalhes: ${e.message}
+    </div>`
+    return
+  }
+
+  if (s.error) {
+    d.innerHTML = `<div class="error-box">
+      ⚠ ${s.error}<br><br>
+      Execute no terminal: <code>python ${TABS[key].script}</code>
+    </div>`
+    return
+  }
+
+  renderDash(d, s, key)
+}
+
+function renderDash(d, s, key) {
+  // Header
+  document.getElementById('header-instrument').textContent =
+    s.name || TABS[key].label
+  document.getElementById('header-ts').textContent =
+    s.timestamp ? new Date(s.timestamp).toLocaleString('pt-BR') : '–'
+  document.getElementById('header-source').textContent =
+    s.source_mode || ''
+
+  const unit = s.unit || 'pts'
+  const wf   = s.walk_forward || {}
+  const bt   = s.bootstrap    || {}
+  const pp   = s.paper        || {}
+
+  // Probabilities
+  const pu  = +(s.p_up   || 0)
+  const pd  = +(s.p_down || 0)
+  const pfl = +(s.p_flat || 0)
+
+  // Walk-forward (prefer nested dict, fallback to top-level legacy)
+  const auc  = wf.auc_up         ?? s.walk_forward_auc      ?? null
+  const mcc  = wf.mcc_multiclass ?? s.walk_forward_mcc      ?? null
+  const sess = wf.total_sessions ?? s.walk_forward_sessions ?? null
+
+  // Bootstrap
+  const ci_lo = bt.ci_lo ?? null
+  const ci_hi = bt.ci_hi ?? null
+  const bMean = bt.mean  ?? null
+  const sig   = bt.sig   ?? false
+
+  // Paper
+  const pEV   = pp.ev_per_trade  ?? null
+  const pHit  = pp.hit_rate      ?? null
+  const pPF   = pp.profit_factor ?? null
+  const pN    = pp.cases         ?? null
+  const cost  = s.cost_points    ?? null
+
+  // Macro
+  const macroVals = s.macro_features || {}
+  const macroMax  = Math.max(...MACRO_KEYS.map(k => Math.abs(macroVals[k] || 0)), 0.001)
+
+  // ── Build HTML ─────────────────────────────────────────────────────────────
+  d.innerHTML = `
+    <!-- Sinal principal -->
+    <div class="card col-5">
+      <div class="card-title">Sinal de hoje</div>
+      <div class="signal-badge ${badgeClass(s.decisao)}">${s.decisao || '–'}</div>
+      <div class="signal-meta">
+        <div class="sm-item">
+          <span class="sm-label">Edge</span>
+          <span class="sm-value" style="color:${accentOf(s.decisao)}">${sign(s.edge)}</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">P ↑</span>
+          <span class="sm-value val-up">${pct(pu)}</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">P ↓</span>
+          <span class="sm-value val-down">${pct(pd)}</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">P ↔</span>
+          <span class="sm-value val-flat">${pct(pfl)}</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">Gap proxy</span>
+          <span class="sm-value val-blue">${fmt(s.gap_proxy, 2)} ${unit}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Probabilidades -->
+    <div class="card col-4">
+      <div class="card-title">Probabilidades calibradas</div>
+      <div class="prob-row">
+        <span class="prob-label val-up">↑</span>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar-fill bar-up" style="width:${clamp(pu*100,0,100)}%">
+            ${pu >= .08 ? pct(pu) : ''}
+          </div>
+        </div>
+      </div>
+      <div class="prob-row">
+        <span class="prob-label val-down">↓</span>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar-fill bar-dn" style="width:${clamp(pd*100,0,100)}%">
+            ${pd >= .08 ? pct(pd) : ''}
+          </div>
+        </div>
+      </div>
+      <div class="prob-row">
+        <span class="prob-label val-flat">↔</span>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar-fill bar-flat" style="width:${clamp(pfl*100,0,100)}%">
+            ${pfl >= .08 ? pct(pfl) : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doughnut -->
+    <div class="card col-3">
+      <div class="card-title">Distribuição</div>
+      <div class="chart-wrap"><canvas id="doughnut"></canvas></div>
+    </div>
+
+    <!-- Features macro -->
+    <div class="card col-12">
+      <div class="card-title">Features macro de hoje</div>
+      <div class="macro-list" id="macro-list"></div>
+    </div>
+
+    <!-- Walk-forward -->
+    <div class="card col-4">
+      <div class="card-title">Walk-forward (out-of-sample)</div>
+      <div class="kpi-grid">
+        <div class="kpi-item">
+          <div class="kpi-label">AUC</div>
+          <div class="kpi-value val-blue">${auc != null ? fmt(auc, 4) : '–'}</div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-label">MCC</div>
+          <div class="kpi-value val-blue">${mcc != null ? fmt(mcc, 4) : '–'}</div>
+        </div>
+        <div class="kpi-item" style="grid-column:span 2">
+          <div class="kpi-label">Sessões out-of-sample</div>
+          <div class="kpi-value">${sess ?? '–'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap IC95% -->
+    <div class="card col-4">
+      <div class="card-title">Bootstrap IC95% (bloco circular)</div>
+      ${bt.error
+        ? `<div style="color:var(--muted);font-size:12px">${bt.error}</div>`
+        : `<div class="boot-range" style="color:${accentOf(s.decisao)}">
+             [${ci_lo != null ? sign(ci_lo) : '–'}&nbsp;,&nbsp;${ci_hi != null ? sign(ci_hi) : '–'}] ${unit}
+           </div>
+           <div class="boot-row">
+             <span>média: <strong>${bMean != null ? sign(bMean) : '–'} ${unit}</strong></span>
+             <span class="sig-pill ${sig ? 'sig-yes' : 'sig-no'}">${sig ? '✓ Significativo' : 'Inclui zero'}</span>
+           </div>`
+      }
+    </div>
+
+    <!-- Paper simulation -->
+    <div class="card col-4">
+      <div class="card-title">Simulação paper${cost != null ? ` — custo ${fmt(cost,2)} ${unit}/trade` : ''}</div>
+      <div class="paper-kpis">
+        <div class="paper-kpi">
+          <div class="paper-kpi-label">EV / trade</div>
+          <div class="paper-kpi-value" style="color:${pEV!=null&&pEV>=0?'var(--up)':'var(--dn)'}">
+            ${pEV != null ? sign(pEV) : '–'} ${unit}
+          </div>
+        </div>
+        <div class="paper-kpi">
+          <div class="paper-kpi-label">Hit rate</div>
+          <div class="paper-kpi-value">${pHit != null ? pct(pHit) : '–'}</div>
+        </div>
+        <div class="paper-kpi">
+          <div class="paper-kpi-label">Profit factor</div>
+          <div class="paper-kpi-value" style="color:${pPF!=null&&pPF>=1?'var(--up)':'var(--dn)'}">
+            ${pPF != null ? fmt(pPF, 2) : '–'}
+          </div>
+        </div>
+      </div>
+      ${pN != null ? `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right">${pN} operações simuladas</div>` : ''}
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      ⚠️ Sinal educacional. Não é recomendação de investimento.
+    </div>
+  `
+
+  // ── Macro bars ─────────────────────────────────────────────────────────────
+  const macroEl = document.getElementById('macro-list')
+  MACRO_KEYS.forEach(k => {
+    const v   = macroVals[k]
+    const pct = v != null ? clamp(Math.abs(v) / macroMax * 100, 0, 100) : 0
+    const col = v == null ? 'var(--muted)' : v >= 0 ? 'var(--up)' : 'var(--dn)'
+    const el  = document.createElement('div')
+    el.className = 'macro-row'
+    el.innerHTML = `
+      <span class="macro-name">${MACRO_NAMES[k] || k}</span>
+      <div class="macro-bar-wrap">
+        <div class="macro-bar-fill" style="width:${pct}%;background:${col}"></div>
+      </div>
+      <span class="macro-val" style="color:${col}">
+        ${v != null ? (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%' : '–'}
+      </span>
+    `
+    macroEl.appendChild(el)
+  })
+
+  // ── Doughnut chart ─────────────────────────────────────────────────────────
+  doughnutChart = new Chart(document.getElementById('doughnut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Alta ↑', 'Baixa ↓', 'Flat ↔'],
+      datasets: [{
+        data: [pu, pd, pfl],
+        backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'],
+        borderWidth: 0,
+      }],
+    },
+    options: {
+      cutout: '62%',
+      plugins: {
+        legend: {
+          display: true, position: 'bottom',
+          labels: { color: '#8892a8', boxWidth: 12, font: { size: 11 } },
+        },
+        tooltip: {
+          callbacks: { label: ctx => ` ${(ctx.parsed * 100).toFixed(1)}%` }
+        },
+      },
+    },
+  })
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+loadSignal(currentTab)
+</script>
+</body>
+</html>
