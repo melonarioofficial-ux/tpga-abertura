@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TPGA — Sinal de Abertura</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="/config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -260,12 +261,17 @@
 
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
-// Os arquivos JSON são gerados diariamente pelo GitHub Actions e servidos
-// como arquivos estáticos pela Vercel.
+// Os sinais são calculados AO VIVO pelo servidor local (MT5 aberto no PC) e
+// expostos via túnel Cloudflare. A URL base vem de config.js (window.TPGA_API_BASE),
+// podendo ser sobrescrita por ?api=... na URL.
+const API_BASE = (new URLSearchParams(location.search).get('api')
+  || window.TPGA_API_BASE
+  || 'http://localhost:8000').replace(/\/+$/, '')
+
 const TABS = {
-  ndx: { label: 'NDX100',        url: '/signal.json'       },
-  xau: { label: 'XAUUSD — Ouro', url: '/signal_xauusd.json' },
-  dax: { label: 'DAX 40',        url: '/signal_dax.json'   },
+  ndx: { label: 'NDX100',        url: API_BASE + '/api/signal/ndx' },
+  xau: { label: 'XAUUSD — Ouro', url: API_BASE + '/api/signal/xau' },
+  dax: { label: 'DAX 40',        url: API_BASE + '/api/signal/dax' },
 }
 
 const MACRO_NAMES = {
@@ -333,14 +339,26 @@ async function loadSignal(key) {
 
   let s
   try {
-    const r = await fetch(TABS[key].url + '?t=' + Date.now())
+    const r = await fetch(TABS[key].url + '?t=' + Date.now(), { cache: 'no-store' })
+    if (r.status === 503) {
+      // Servidor no ar, mas ainda aquecendo (ou MT5 momentaneamente indisponível)
+      d.innerHTML = `<div class="stale-warn">
+        ⏳ <strong>Calculando o sinal de ${TABS[key].label}…</strong><br>
+        O servidor está conectando ao MT5 e processando os dados reais.
+        Isso leva alguns minutos no primeiro carregamento — atualize em instantes.
+      </div>`
+      return
+    }
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     s = await r.json()
   } catch (e) {
+    // Falha de rede = servidor/MT5 desligado no PC
     d.innerHTML = `<div class="error-box">
-      ⚠ Sinal ${TABS[key].label} não disponível.<br>
-      O sinal é gerado automaticamente nos dias úteis às 10h BRT.<br>
-      Detalhes: ${e.message}
+      🔌 <strong>Servidor de dados offline.</strong><br>
+      Os sinais são calculados em tempo real a partir do MetaTrader 5.
+      Para ver os dados, o computador-servidor precisa estar <strong>ligado</strong>,
+      com o <strong>MT5 aberto</strong> e o servidor TPGA rodando.<br>
+      <span style="font-size:11px;color:var(--muted)">Fonte: ${API_BASE} · ${e.message}</span>
     </div>`
     return
   }
@@ -359,7 +377,7 @@ function renderDash(d, s, key) {
   document.getElementById('header-ts').textContent =
     s.timestamp ? new Date(s.timestamp).toLocaleString('pt-BR') : '–'
   document.getElementById('header-source').textContent =
-    s.source_mode || ''
+    s.data_source || s.source_mode || ''
 
   const unit = s.unit || 'pts'
   const wf   = s.walk_forward || {}

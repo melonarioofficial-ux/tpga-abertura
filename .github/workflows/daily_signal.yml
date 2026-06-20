@@ -1,10 +1,12 @@
-name: Daily Signal — NDX100 | XAUUSD | DAX 40
+name: Daily Signal (OBSOLETO — desativado)
+
+# ATENÇÃO: a partir da arquitetura MT5 ao vivo, os sinais são calculados pelo
+# servidor local (server_mt5.py) e lidos via túnel Cloudflare. Este workflow,
+# que gerava JSONs estáticos em public/, NÃO é mais usado.
+# O agendamento (cron) foi removido. Mantido só para disparo manual histórico.
 
 on:
-  schedule:
-    # 13:00 UTC = 10:00 BRT  (antes da abertura do mercado americano)
-    - cron: '0 13 * * 1-5'
-  workflow_dispatch:   # disparo manual pelo GitHub UI
+  workflow_dispatch:   # disparo manual pelo GitHub UI (uso eventual)
 
 jobs:
   generate:

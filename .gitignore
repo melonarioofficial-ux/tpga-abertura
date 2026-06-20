@@ -47,3 +47,5 @@ Thumbs.db
 # ── Config com segredos (se houver) ──────────────────────────
 config/secrets.json
 config/*.key
+
+.vercel

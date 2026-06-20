@@ -1,0 +1,7 @@
+# Servidor local de sinais (roda na sua máquina, com MT5 aberto)
+# Inclui o motor de cálculo + ponte MT5 + API HTTP.
+-r requirements_ci.txt
+MetaTrader5>=5.0
+flask>=3.0
+flask-cors>=4.0
+waitress>=3.0
