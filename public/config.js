@@ -10,4 +10,4 @@
 //  Para testar só na sua máquina (sem túnel), deixe:
 //      window.TPGA_API_BASE = "http://localhost:8000";
 //
-window.TPGA_API_BASE = "https://zum-jewelry-frequently-radio.trycloudflare.com";
+window.TPGA_API_BASE = "https://inter-desirable-framed-environmental.trycloudflare.com";
