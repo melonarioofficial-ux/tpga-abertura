@@ -47,6 +47,9 @@ class SymbolConfig:
     open_time:  str  = "19:00"
     timezone:   str  = "America/Sao_Paulo"
     years_history: int = 3
+    # Features de engenharia extras (momentum/tendencia/vol/calendario).
+    # Promovidas por instrumento apenas onde melhoram o OOS. Default: nenhuma.
+    extra_features: list = field(default_factory=list)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -98,6 +101,12 @@ SYMBOLS: Dict[str, SymbolConfig] = {
         flat_threshold=25.0, cost_points=2.0, output_key="dax", unit="pts",
         # ~13:30 BRT = 17:30 Frankfurt (verão CET+2); ajuste manual para inverno
         close_time="13:30", open_time="08:00",
+        # Features de engenharia: validadas OOS no DAX (MCC 0.006->0.192, AUC +0.067).
+        extra_features=[
+            "prev_gap_pct", "gap_5d_mean", "gap_5d_std",
+            "close_sma5_dist", "close_sma10_dist", "rv_10d",
+            "dow", "is_monday",
+        ],
         corr_map={
             "futures_overnight_ret":          "^GSPC",      # S&P500 fecha após DAX — preditor #1
             "qqq_premarket_ret":              "EURUSD=X",   # EUR/USD
@@ -243,6 +252,15 @@ def build_yf_dataset(cfg: SymbolConfig, verbose: bool = True) -> Optional[pd.Dat
         rows.append(row)
 
     df_out = pd.DataFrame(rows)
+
+    # Features de engenharia (só para instrumentos que as usam, ex.: DAX).
+    if cfg.extra_features:
+        from tpga.features import build_engineered_features
+        eng = build_engineered_features(main)
+        df_out = df_out.merge(eng, on="session_date", how="left")
+        if verbose:
+            print(f"  + {len(cfg.extra_features)} features de engenharia (DAX)")
+
     if verbose:
         print(f"  Dataset: {len(df_out)} sessões ({df_out.session_date.iloc[0]} → {df_out.session_date.iloc[-1]})")
     return df_out
@@ -311,7 +329,7 @@ def run_signal_pipeline(
         fakeout_max=0.70, cost_points=cfg.cost_points,
     )
 
-    pred, metrics = walk_forward_validate(df_hist, wf_cfg)
+    pred, metrics = walk_forward_validate(df_hist, wf_cfg, extra_features=cfg.extra_features)
 
     # GapSessionConfig com times de sessão do símbolo
     try:
@@ -332,6 +350,14 @@ def run_signal_pipeline(
         )
         if not source_mode:
             source_mode = f"hibrido_mt5_{cfg.output_key}"
+        # O caminho MT5 monta a linha do zero (intraday) e nao tem as features
+        # de engenharia (diarias). Copia do ultimo registro historico, que carrega
+        # o estado de momentum/tendencia/vol/calendario mais recente.
+        if cfg.extra_features:
+            last_hist = df_hist.iloc[-1]
+            for col in cfg.extra_features:
+                if col in df_hist.columns:
+                    current_row[col] = last_hist[col]
     else:
         current_row = df_hist.iloc[-1:].copy()
         for col, val in (today_macro or {}).items():
@@ -343,7 +369,8 @@ def run_signal_pipeline(
         if not source_mode:
             source_mode = f"yfinance_only_{cfg.output_key}"
 
-    signal = train_and_score_current(df_hist, current_row, gap_cfg, random_state=42)
+    signal = train_and_score_current(df_hist, current_row, gap_cfg, random_state=42,
+                                     extra_features=cfg.extra_features)
 
     macro_filled = sum(1 for v in (today_macro or {}).values() if _is_finite(v))
     payload = _build_payload(cfg, signal, pred, metrics, mt5_count, macro_filled, source_mode, today_macro)

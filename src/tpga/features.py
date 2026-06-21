@@ -35,6 +35,44 @@ BASE_FEATURES = [
 ]
 
 
+# Features de engenharia (momentum / tendencia / vol / calendario).
+# Validadas out-of-sample: melhoram o DAX (MCC 0.006->0.192). Aplicadas por
+# instrumento via SymbolConfig.extra_features — NAO sao globais.
+ENGINEERED_FEATURES = [
+    "prev_gap_pct", "gap_5d_mean", "gap_5d_std",
+    "close_sma5_dist", "close_sma10_dist", "rv_10d",
+    "dow", "is_monday",
+]
+
+
+def build_engineered_features(main_ohlc: pd.DataFrame) -> pd.DataFrame:
+    """Calcula as features de engenharia a partir do OHLC diario do instrumento
+    principal. Tudo PAST-ONLY (deslocado): usa apenas info disponivel antes da
+    abertura da sessao alvo. Indexado por session_date (ISO).
+
+    Espera um DataFrame com DatetimeIndex e colunas Open/Close.
+    """
+    m = main_ohlc.dropna(subset=["Open", "Close"]).copy()
+    pc   = m["Close"].shift(1)
+    gpct = (m["Open"] - pc) / pc
+    ret  = np.log(m["Close"] / m["Close"].shift(1))
+    sma5  = m["Close"].rolling(5).mean()
+    sma10 = m["Close"].rolling(10).mean()
+    dow   = pd.Series(m.index.dayofweek, index=m.index)
+
+    f = pd.DataFrame(index=m.index)
+    f["session_date"]     = [d.date().isoformat() for d in m.index]
+    f["prev_gap_pct"]     = gpct.shift(1)
+    f["gap_5d_mean"]      = gpct.shift(1).rolling(5).mean()
+    f["gap_5d_std"]       = gpct.shift(1).rolling(5).std()
+    f["close_sma5_dist"]  = (m["Close"].shift(1) / sma5.shift(1) - 1.0)
+    f["close_sma10_dist"] = (m["Close"].shift(1) / sma10.shift(1) - 1.0)
+    f["rv_10d"]           = ret.shift(1).rolling(10).std()
+    f["dow"]              = dow.astype(float)
+    f["is_monday"]        = (dow == 0).astype(float)
+    return f.reset_index(drop=True)
+
+
 def _safe_log_ratio(a: pd.Series, b: pd.Series) -> pd.Series:
     a = pd.to_numeric(a, errors="coerce")
     b = pd.to_numeric(b, errors="coerce")
@@ -60,7 +98,8 @@ def encode_noii_side(series: pd.Series) -> pd.Series:
     return series.astype(str).str.upper().str.strip().map(mapping).fillna(0.0)
 
 
-def build_features(df: pd.DataFrame, flat_threshold_points: float = 5.0) -> tuple[pd.DataFrame, list[str]]:
+def build_features(df: pd.DataFrame, flat_threshold_points: float = 5.0,
+                   extra_features: list[str] | None = None) -> tuple[pd.DataFrame, list[str]]:
     out = add_gap_labels(df, flat_threshold_points=flat_threshold_points)
     out = ensure_numeric_columns(out, OPTIONAL_COLUMNS)
 
@@ -104,9 +143,15 @@ def build_features(df: pd.DataFrame, flat_threshold_points: float = 5.0) -> tupl
     vwap_stretch = np.clip(np.abs(out["vwap_distance"].fillna(0)) * 50.0, 0, 1)
     out["fakeout_risk"] = np.clip(0.45 * divergence.astype(float) + 0.30 * abnormal_close + 0.25 * vwap_stretch, 0, 1)
 
-    for col in BASE_FEATURES:
+    feature_list = BASE_FEATURES.copy()
+    # Features extras por instrumento (ex.: engenharia do DAX). Mantidas se
+    # presentes no df; ausentes viram NaN (o modelo trata NaN nativamente).
+    for col in (extra_features or []):
+        if col not in feature_list:
+            feature_list.append(col)
+
+    for col in feature_list:
         if col not in out.columns:
             out[col] = np.nan
 
-    features = BASE_FEATURES.copy()
-    return out, features
+    return out, feature_list

@@ -93,8 +93,8 @@ def build_current_feature_row(
     return pd.DataFrame([row])
 
 
-def train_and_score_current(historical_gap_df: pd.DataFrame, current_row: pd.DataFrame, cfg: GapSessionConfig, random_state: int = 42) -> PaperSignal:
-    train, features = build_features(historical_gap_df)
+def train_and_score_current(historical_gap_df: pd.DataFrame, current_row: pd.DataFrame, cfg: GapSessionConfig, random_state: int = 42, extra_features: list | None = None) -> PaperSignal:
+    train, features = build_features(historical_gap_df, extra_features=extra_features)
     train = train.sort_values("session_date").reset_index(drop=True)
 
     # Quantis de regime estimados apenas no historico (treino), aplicados ao snapshot.
@@ -108,7 +108,7 @@ def train_and_score_current(historical_gap_df: pd.DataFrame, current_row: pd.Dat
     regime_features = [c for c in train.columns if c.startswith("regime_")]
     features = features + regime_features
 
-    test, _ = build_features(current_row)
+    test, _ = build_features(current_row, extra_features=extra_features)
     test = add_regime_features(test, vol_q70=vol_q70, vol_q35=vol_q35, risk_q70=risk_q70)
     for col in features:
         if col not in test.columns:

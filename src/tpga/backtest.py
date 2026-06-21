@@ -25,8 +25,10 @@ class WalkForwardConfig:
     cost_points: float = 2.0
 
 
-def walk_forward_validate(raw: pd.DataFrame, cfg: WalkForwardConfig) -> tuple[pd.DataFrame, Dict[str, Any]]:
-    df, features = build_features(raw, flat_threshold_points=cfg.flat_threshold_points)
+def walk_forward_validate(raw: pd.DataFrame, cfg: WalkForwardConfig,
+                          extra_features: List[str] | None = None) -> tuple[pd.DataFrame, Dict[str, Any]]:
+    df, features = build_features(raw, flat_threshold_points=cfg.flat_threshold_points,
+                                  extra_features=extra_features)
     # NAO aplicar add_regime_features no dataset completo (lookahead bias).
     # Os regimes sao calculados por fold, com quantis estimados so no treino.
     df = df.sort_values("session_date").reset_index(drop=True)
