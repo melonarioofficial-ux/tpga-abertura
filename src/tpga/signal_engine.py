@@ -249,20 +249,25 @@ def build_yf_dataset(cfg: SymbolConfig, verbose: bool = True) -> Optional[pd.Dat
 
 
 def fetch_live_macro(cfg: SymbolConfig) -> dict:
-    """Baixa retornos mais recentes de todos os correlatos para sinal live."""
+    """Baixa retornos mais recentes de todos os correlatos para sinal live.
+
+    Usa janela de 1 mês (não 5d): alguns índices — em especial os juros do
+    Tesouro (^TNX) — retornam apenas 1 ponto em '5d', o que zerava a feature.
+    Com 1mo há sempre >= 2 fechamentos; o retorno do dia é os 2 últimos.
+    """
     import yfinance as yf
     result: dict = {}
     for feat_col, ticker in cfg.corr_map.items():
         try:
-            df = yf.download(ticker, period="5d", progress=False, auto_adjust=True)
+            df = yf.download(ticker, period="1mo", progress=False, auto_adjust=True)
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = [c[0] for c in df.columns]
-            if df.empty or len(df) < 2:
+            if df.empty:
                 result[feat_col] = np.nan
                 continue
             c = df["Close"].dropna()
             result[feat_col] = (
-                float(np.log(c.iloc[-1] / c.iloc[-2])) if len(c) >= 2 else np.nan
+                float(np.log(float(c.iloc[-1]) / float(c.iloc[-2]))) if len(c) >= 2 else np.nan
             )
         except Exception:
             result[feat_col] = np.nan

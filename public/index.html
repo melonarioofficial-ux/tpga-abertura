@@ -124,6 +124,17 @@
     .badge-down { background: rgba(239,68,68,.15);  color: var(--dn);   border: 1px solid rgba(239,68,68,.35); }
     .badge-flat { background: rgba(245,158,11,.12); color: var(--flat); border: 1px solid rgba(245,158,11,.3); }
 
+    /* ── Quality tag (confiabilidade do edge) ────────────────────── */
+    .quality-tag {
+      display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 6px;
+      margin-bottom: 4px; cursor: help;
+    }
+    .quality-tag .q-mcc { font-size: 10px; font-weight: 600; color: var(--dim); }
+    .q-good { background: rgba(34,197,94,.12);  color: var(--up);   border: 1px solid rgba(34,197,94,.35); }
+    .q-mid  { background: rgba(59,130,246,.10); color: var(--blue); border: 1px solid rgba(59,130,246,.3); }
+    .q-warn { background: rgba(245,158,11,.10); color: var(--flat); border: 1px solid rgba(245,158,11,.35); }
+
     .signal-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
     .sm-item     { display: flex; flex-direction: column; gap: 2px; }
     .sm-label    { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
@@ -309,6 +320,34 @@ function accentOf(label) {
   return 'var(--flat)'
 }
 
+// Classifica a QUALIDADE estatística do edge (não é a direção, é a confiabilidade).
+//   sig  = bootstrap IC95% do EV não cruza zero (edge significativo)
+//   mcc  = skill direcional out-of-sample (0 = sem habilidade, >0.1 = razoável)
+function qualityTag(sig, mcc, auc) {
+  const m = (mcc == null) ? 0 : +mcc
+  let cls, txt, tip
+  if (sig && m >= 0.10) {
+    cls = 'q-good'
+    txt = '✓ Edge robusto'
+    tip = 'Bootstrap significativo e skill direcional razoável (MCC ≥ 0,10).'
+  } else if (sig && m < 0.05) {
+    cls = 'q-warn'
+    txt = '⚠ Lucro sem skill direcional'
+    tip = 'EV histórico significativo, mas MCC ≈ 0: ganho vem de poucos gaps grandes, não de acertar a direção. Cautela.'
+  } else if (sig) {
+    cls = 'q-mid'
+    txt = '~ Edge moderado'
+    tip = 'Bootstrap significativo, skill direcional limitada.'
+  } else {
+    cls = 'q-warn'
+    txt = '⚠ Edge não significativo'
+    tip = 'O IC95% do EV cruza zero: o edge histórico não é estatisticamente confiável. Trate como estudo.'
+  }
+  return `<div class="quality-tag ${cls}" title="${tip}">${txt}
+            <span class="q-mcc">MCC ${m.toFixed(3)} · AUC ${auc != null ? (+auc).toFixed(3) : '–'}</span>
+          </div>`
+}
+
 function badgeClass(label) {
   if (!label) return 'badge-flat'
   const l = label.toUpperCase()
@@ -417,6 +456,7 @@ function renderDash(d, s, key) {
     <div class="card col-5">
       <div class="card-title">Sinal de hoje</div>
       <div class="signal-badge ${badgeClass(s.decisao)}">${s.decisao || '–'}</div>
+      ${qualityTag(sig, mcc, auc)}
       <div class="signal-meta">
         <div class="sm-item">
           <span class="sm-label">Edge</span>
